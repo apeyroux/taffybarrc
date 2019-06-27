@@ -14,6 +14,8 @@ import System.Taffybar.Widget.Util
 import System.Taffybar.Widget.Workspaces
 import System.Taffybar.Widget.FreedesktopNotifications
 import System.Taffybar.Widget.Battery
+import System.Taffybar.Widget.MPRIS2
+import System.Taffybar.Widget.SNITray
 
 transparent = (0.0, 0.0, 0.0, 0.0)
 yellow1 = (0.9453125, 0.63671875, 0.2109375, 1.0)
@@ -55,35 +57,35 @@ cpuCallback = do
   return [totalLoad, systemLoad]
 
 main = do
-  let myWorkspacesConfig = defaultWorkspacesConfig { 
-
+  let myWorkspacesConfig = defaultWorkspacesConfig {
         showWorkspaceFn = hideEmpty
       }
       workspaces = workspacesNew myWorkspacesConfig
       cpu = pollingGraphNew cpuCfg 0.5 cpuCallback
-      tray = sniTrayNew
       clock = textClockNew Nothing "%d/%m/%Y %H:%M" 5
       mem = pollingGraphNew memCfg 1 memCallback
       net = networkGraphNew netCfg (Just ["wlp2s0"])
       layout = layoutNew defaultLayoutConfig
       windows = windowsNew defaultWindowsConfig
-      -- tray = sniTrayNew
+      tray = (getHost True >>= sniTrayNewFromHost)
       -- tray = sniTrayThatStartsWatcherEvenThoughThisIsABadWayToDoIt
       myConfig = defaultSimpleTaffyConfig
         { startWidgets =
             workspaces : map (>>= buildContentsBox) [ layout, windows ]
         , endWidgets = map (>>= buildContentsBox)
           [
-          -- tray
-           clock
+          clock
+          , batteryIconNew
           , net
           , mem
           , cpu
+          , tray
+          , mpris2New
           -- , notifyAreaNew defaultNotificationConfig
           ]
         , barPosition = Bottom
-        , barPadding = 1
-        , barHeight = 30
-        , widgetSpacing = 1
+        -- , barPadding = 1
+        -- , barHeight = 30
+        -- , widgetSpacing = 1
         }
   dyreTaffybar $ withBatteryRefresh $ withLogServer $ withToggleServer $ toTaffyConfig myConfig

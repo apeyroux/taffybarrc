@@ -30,9 +30,7 @@
    with your gtk theme.
  */
 .taffy-window * {
-
   all: unset;
-
   font-family: "Noto Sans", "sans-serif";
   font-size: 10pt;
   color: @foreground-normal;
